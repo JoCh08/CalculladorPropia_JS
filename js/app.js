@@ -15,6 +15,20 @@ btnGuardarCliente.addEventListener('click', guardarCliente);
 
 function guardarCliente(e) {
 
+    if (cliente.mesa !== '' || cliente.hora !== '') {
+    
+        /// limpiar el objeto cliente
+        cliente = { 
+            mesa: '',
+            hora: '',
+            pedido: []
+        };
+        //limpiar el HTML
+        limpiarHTML();
+        
+
+    }
+
     const mesa = document.querySelector('#mesa').value;
     const hora = document.querySelector('#hora').value;
     const camposVacios = [mesa, hora].some(campo=> campo === '');
@@ -166,13 +180,19 @@ function agregarPlatillo(Orden) {
     //limpiar el contenido previo
     limpiarHTML();
 
-    actualizarResumen();
+     if(cliente.pedido.length ) {
+            actualizarResumen();
+    } else{
+        listaVacia();
+    }
+
  
 
 }
 
 function actualizarResumen() {
     const contenido = document.querySelector('#resumen .contenido');
+   
     
     const  resumen =document.createElement('div');
     resumen.classList.add('col-md-6', 'card', 'py-5', 'px-3', 'shadow');
@@ -260,7 +280,21 @@ function actualizarResumen() {
         subtotalValor.style.display = 'inline-block';
         subtotalValor.textContent = `$${precio * cantidad}`;
 
-        //agragr valores contendores
+         // Boton para eliminar (alineado a la derecha)
+        const btnEliminar = document.createElement('button');
+        btnEliminar.classList.add('btn', 'btn-outline-secondary', 'btn-sm', 'rounded-pill', 'border-2', 'float-end', 'ms-3');
+        btnEliminar.style.fontFamily = "'Courier New', Courier, monospace";
+        btnEliminar.style.backgroundColor = '#f8d7da'; // rojo claro
+        btnEliminar.style.color = '#721c24'; // texto rojo oscuro
+        btnEliminar.style.borderColor = '#f5c6cb'; // borde rojo claro
+        btnEliminar.textContent = '✖ Eliminar';
+
+        btnEliminar.onclick = function() {
+            BtndeletePlatillo(id);
+
+        }
+
+        //agregar valores contendores
         subtotalEL.appendChild(subtotalValor);
 
 
@@ -268,6 +302,7 @@ function actualizarResumen() {
         lista.appendChild(cantidadEL);
         lista.appendChild(precioEL);
         lista.appendChild(subtotalEL);
+        lista.appendChild(btnEliminar);
 
         //agregar elementos al LI
         grupo.appendChild(lista);
@@ -278,11 +313,16 @@ function actualizarResumen() {
 
     
     //limpiar el contenido
+    resumen.appendChild(heading);
     resumen.appendChild(mesa);
     resumen.appendChild(hora);
-    resumen.appendChild(heading);
     resumen.appendChild(grupo);
+    
     contenido.appendChild(resumen);
+     
+    //*formulario de propinas
+    mostrarPropinas();
+
 }
 
 function limpiarHTML() {
@@ -290,4 +330,289 @@ function limpiarHTML() {
     while (contenido.firstChild) {
         contenido.removeChild(contenido.firstChild);
     }
+}
+
+function BtndeletePlatillo(id) {
+    //eliminar del objeto cliente
+    const {pedido} = cliente;
+    const resultado = pedido.filter(platillo => platillo.id !== id);
+    cliente.pedido = [...resultado];
+
+    //limpiar el HTML
+    limpiarHTML();
+
+    //actualizar el resumen
+
+    
+  if(cliente.pedido.length ) {
+            actualizarResumen();
+    } else{
+        listaVacia();
+    }
+
+    //reiniciar el input de cantidad
+    document.querySelector(`#cantidad-${id}`).value = 0;
+  
+
+}
+
+function listaVacia() {
+    const contenido = document.querySelector('#resumen .contenido');
+    
+    const mensaje = document.createElement('p');
+    mensaje.classList.add('text-center', 'fs-4', 'text-secondary', 'mt-5');
+    mensaje.textContent = 'Añade los elementos del pedido';
+    contenido.appendChild(mensaje);
+}
+function mostrarPropinas() {
+    const contenido = document.querySelector('#resumen .contenido');
+
+
+
+    // Crear el contenedor del formulario con estilo oscuro vintage
+    const formulario = document.createElement('div');
+    formulario.classList.add('col-md-6', 'formulario', 'py-5', 'px-4', 'shadow', 'bg-light', 'border', 'rounded');
+    formulario.style.maxWidth = '420px';
+    formulario.style.margin = '0 auto';
+    formulario.style.fontFamily = "'Special Elite', 'Courier New', Courier, monospace";
+    formulario.style.border = '3px solid #bfc1c2';
+    formulario.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(220,220,220,0.85) 100%)';
+    formulario.style.boxShadow = '0 8px 24px rgba(180, 180, 180, 0.3)';
+    formulario.style.color = '#333';
+    formulario.style.letterSpacing = '0.5px';
+
+    const divFormulario = document.createElement('div');
+    divFormulario.classList.add('card', 'py-5', 'px-3', 'shadow', 'bg-white', 'rounded');
+    divFormulario.style.background = 'rgba(255,255,255,0.85)';
+    divFormulario.style.border = '2px solid #bfc1c2';
+
+    const heading = document.createElement('h3');
+    heading.textContent = 'Propinas';
+    heading.classList.add('my-4', 'text-center');
+    heading.style.fontFamily = "'Special Elite', 'Courier New', Courier, monospace";
+    heading.style.color = '#333';
+    heading.style.textShadow = '1px 1px 0rgb(11, 153, 224), 2px 2px 0 #fff';
+
+
+   const radiobuttonContenido = radiobutton();
+
+
+
+    //add  div principa;
+    divFormulario.appendChild(heading);
+    divFormulario.appendChild(radiobuttonContenido);
+   
+    
+    //add contenido  al form
+    formulario.appendChild(divFormulario);
+    contenido.appendChild(formulario);
+
+
+    
+
+
+
+}
+
+
+function radiobutton() {
+
+    const divFormulario = document.createElement('div');
+
+    // radio button 0%
+    const radio0 = document.createElement('input');
+    radio0.type = 'radio';
+    radio0.name = 'propina';
+    radio0.value = '0';
+    radio0.classList.add('form-check-input', 'propina-radio');
+    radio0.onclick=caldularPropina;
+
+    const label0 = document.createElement('label');
+    label0.textContent = '0%';
+    label0.classList.add('form-check-label', 'fw-bold', 'propina-label');
+    label0.style.fontFamily = "'Courier New', Courier, monospace";
+    label0.style.color = '#000';
+
+    const div0 = document.createElement('div');
+    div0.classList.add('form-check', 'mb-3');
+    div0.appendChild(radio0);
+    div0.appendChild(label0);
+
+    // radio button 10%
+    const radio10 = document.createElement('input');
+    radio10.type = 'radio';
+    radio10.name = 'propina';
+    radio10.value = '10';
+    radio10.classList.add('form-check-input', 'propina-radio');
+     radio10.onclick=caldularPropina;
+
+    const label10 = document.createElement('label');
+    label10.textContent = '10%';
+    label10.classList.add('form-check-label', 'fw-bold', 'propina-label');
+    label10.style.fontFamily = "'Courier New', Courier, monospace";
+    label10.style.color = '#000';
+
+    const div10 = document.createElement('div');
+    div10.classList.add('form-check', 'mb-3');
+    div10.appendChild(radio10);
+    div10.appendChild(label10);
+
+    // radio button 15%
+    const radio15 = document.createElement('input');
+    radio15.type = 'radio';
+    radio15.name = 'propina';
+    radio15.value = '15';
+    radio15.classList.add('form-check-input', 'propina-radio');
+     radio15.onclick=caldularPropina;
+
+    const label15 = document.createElement('label');
+    label15.textContent = '15%';
+    label15.classList.add('form-check-label', 'fw-bold', 'propina-label');
+    label15.style.fontFamily = "'Courier New', Courier, monospace";
+    label15.style.color = '#000';
+
+    const div15 = document.createElement('div');
+    div15.classList.add('form-check', 'mb-3');
+    div15.appendChild(radio15);
+    div15.appendChild(label15);
+
+    // radio button 25%
+    const radio25 = document.createElement('input');
+    radio25.type = 'radio';
+    radio25.name = 'propina';
+    radio25.value = '25';
+    radio25.classList.add('form-check-input', 'propina-radio');
+     radio25.onclick=caldularPropina;
+
+    const label25 = document.createElement('label');
+    label25.textContent = '25%';
+    label25.classList.add('form-check-label', 'fw-bold', 'propina-label');
+    label25.style.fontFamily = "'Courier New', Courier, monospace";
+    label25.style.color = '#000';
+
+    const div25 = document.createElement('div');
+    div25.classList.add('form-check', 'mb-3');
+
+    // --- Agregar estilos dinámicos para hover y selección ---
+    // Solo se agrega una vez
+    if (!document.getElementById('propina-radio-style')) {
+        const style = document.createElement('style');
+        style.id = 'propina-radio-style';
+        style.textContent = `
+            .propina-label {
+                transition: background 0.2s, color 0.2s;
+                border-radius: 6px;
+                padding: 2px 10px;
+                cursor: pointer;
+            }
+            .propina-radio:checked + .propina-label {
+                background: #d4edda;
+                color: #155724 !important;
+                border: 2px solid #28a745;
+            }
+            .propina-label:hover {
+                background: #e2f7e2;
+                color: #218838 !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Relacionar input y label para el selector CSS
+    radio0.id = 'propina-0';
+    label0.htmlFor = 'propina-0';
+    radio10.id = 'propina-10';
+    label10.htmlFor = 'propina-10';
+    radio15.id = 'propina-15';
+    label15.htmlFor = 'propina-15';
+    radio25.id = 'propina-25';
+    label25.htmlFor = 'propina-25';
+
+
+    //add
+    div25.appendChild(radio25);
+    div25.appendChild(label25);
+
+    //agregar todos los divs al divFormulario
+    divFormulario.appendChild(div0);
+    divFormulario.appendChild(div10);
+    divFormulario.appendChild(div15);
+    divFormulario.appendChild(div25);
+
+    return divFormulario;
+
+}
+
+function caldularPropina(e) {
+    let propina = parseInt(e.target.value);
+    const {pedido} = cliente;
+    let total = 0;
+    
+    
+    pedido.forEach(platillo => { 
+        total += platillo.precio * platillo.cantidad;
+    
+    
+    });
+
+    let calcpropina = (total * propina) / 100;
+
+    let totalFinal = total + calcpropina;
+
+    console.log('Calculando propina...' + propina + ' Total: $' + total + ' Propina: $' + calcpropina + ' Total Final: $' + totalFinal);
+    
+    agregarTotalHTML( total, calcpropina, totalFinal);
+
+}
+
+function agregarTotalHTML(total, calcpropina, totalFinal) {
+    const formulario = document.querySelector('.formulario > div');
+
+    // Elimina cualquier resumen previo de totales
+    const totalPrevio = formulario.querySelector('.resumen-totales');
+    if (totalPrevio) {
+        totalPrevio.remove();
+    }
+
+    // Contenedor principal de los totales
+    const resumenTotales = document.createElement('div');
+    resumenTotales.classList.add('resumen-totales', 'mt-4', 'p-4', 'rounded', 'shadow-sm');
+    resumenTotales.style.background = 'rgba(245,245,245,0.95)';
+    resumenTotales.style.border = '2px solid #bfc1c2';
+    resumenTotales.style.fontFamily = "'Special Elite', 'Courier New', Courier, monospace";
+    resumenTotales.style.maxWidth = '350px';
+    resumenTotales.style.margin = '0 auto';
+
+    // Total productos
+    const totalDiv = document.createElement('div');
+    totalDiv.classList.add('d-flex', 'justify-content-between', 'mb-2', 'align-items-center');
+    totalDiv.innerHTML = `<span class="fw-bold">Total productos:</span> <span class="fw-normal">$${total.toFixed(2)}</span>`;
+
+    // Propina
+    const propinaDiv = document.createElement('div');
+    propinaDiv.classList.add('d-flex', 'justify-content-between', 'mb-2', 'align-items-center');
+    propinaDiv.innerHTML = `<span class="fw-bold">Propina:</span> <span class="fw-normal">$${calcpropina.toFixed(2)}</span>`;
+
+    // Barra separadora
+    const separador = document.createElement('hr');
+    separador.style.borderTop = '3px double #bfc1c2';
+    separador.style.margin = '18px 0';
+
+    // Total final
+    const totalFinalDiv = document.createElement('div');
+    totalFinalDiv.classList.add('d-flex', 'justify-content-between', 'align-items-center');
+    totalFinalDiv.innerHTML = `<span class="fw-bold" style="font-size:1.2em;color:#218838;">Total a pagar:</span> <span class="fw-bold" style="font-size:1.2em;color:#218838;">$${totalFinal.toFixed(2)}</span>`;
+
+    // Agregar al contenedor
+    resumenTotales.appendChild(totalDiv);
+    resumenTotales.appendChild(propinaDiv);
+    resumenTotales.appendChild(separador);
+    resumenTotales.appendChild(totalFinalDiv);
+
+    // Insertar en el formulario
+    formulario.appendChild(resumenTotales);
+
+    
+
+
 }
